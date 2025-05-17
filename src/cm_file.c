@@ -4,11 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "cm_string.h"
+
 // List all files at path.
 // Returns **struct cm_file_list_dir_data**
 // after use, call cm_file_list_dir_close(cm_file_list_dir_data*)
 // https://stackoverflow.com/questions/4204666/how-to-list-files-in-a-directory-in-a-c-program
-struct cm_file_list_dir_data* cm_file_list_dir(char* path) {
+struct cm_file_list_dir_data* cm_file_list_dir(cm_string path) {
   struct cm_file_list_dir_data* tld =
       malloc(sizeof(struct cm_file_list_dir_data));
   tld->dirs = malloc(sizeof(struct cm_file) *
@@ -48,7 +50,7 @@ void cm_file_list_dir_close(struct cm_file_list_dir_data* tld) {
 }
 
 // Returns the string of filetype
-char* cm_file_get_filetype_str(enum cm_file_type filetype) {
+cm_string cm_file_get_filetype_str(enum cm_file_type filetype) {
   if (filetype == TFILE) {
     return FILE_TYPE_FILE_STR;
   } else {
@@ -57,7 +59,7 @@ char* cm_file_get_filetype_str(enum cm_file_type filetype) {
 }
 
 // Creates an file
-FILE* cm_file_create(char* file_name) {
+FILE* cm_file_create(cm_string file_name) {
   FILE* file;
   file = fopen(file_name, FILE_MODE_WRITE);
   return file;

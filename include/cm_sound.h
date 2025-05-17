@@ -4,17 +4,18 @@
 #include <SDL2/SDL_mixer.h>
 
 #include "cm_bool.h"
+#include "cm_string.h"
 
 struct cm_sound {
   // the name/path of sound
-  char* name;
+  cm_string name;
   // the sdl sound
   Mix_Music* music;
 };
 
 #define cm_sound(name) cm_sound_make(name);
 
-struct cm_sound cm_sound_make(char* name);
+struct cm_sound cm_sound_make(cm_string name);
 
 // Inits the sound.
 cm_bool cm_sound_init();

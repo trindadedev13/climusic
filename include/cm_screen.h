@@ -3,10 +3,13 @@
 
 #include <ncurses.h>
 
+#include "cm_string.h"
 #include "cm_vec.h"
 
 #define CM_KEY_UP KEY_UP
+#define CM_KEY_LEFT KEY_LEFT
 #define CM_KEY_DOWN KEY_DOWN
+#define CM_KEY_RIGHT KEY_RIGHT
 
 struct cm_cursor {
   int x;
@@ -45,6 +48,15 @@ int cm_screen_getchar();
 
 // Update. Should be called in loop.
 void cm_screen_update(struct cm_screen*);
+
+// Enable user input.
+void cm_screen_enable_echo();
+
+// Disable user input.
+void cm_screen_disable_echo();
+
+// Read echo string to dest.
+void cm_screen_get_str(cm_string dest);
 
 // Clear an whole line.
 void cm_screen_clear_line(struct cm_screen* screen, int y);

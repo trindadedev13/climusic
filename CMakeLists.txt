@@ -10,16 +10,21 @@ set(SOURCES
     src/cm_colors.c
     src/cm_file.c
     src/cm_gui.c
+    src/cm_online.c
     src/cm_screen.c
+    src/cm_string.c
     src/cm_sound.c
     src/cm_vec.c)
 
 set(HEADERS
     include/cm_bool.h
+    include/cm_buffer.h
     include/cm_colors.h
     include/cm_file.h
     include/cm_gui.h
+    include/cm_online.h
     include/cm_screen.h
+    include/cm_string.h
     include/cm_sound.h
     include/cm_vec.h)
 
@@ -34,7 +39,8 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE
     SDL2
     SDL2_mixer
-    ncurses)
+    ncurses
+    curl)
 
 target_include_directories(${PROJECT_NAME}
     PUBLIC

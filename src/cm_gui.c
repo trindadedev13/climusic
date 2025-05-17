@@ -8,6 +8,7 @@
 
 #include "cm_colors.h"
 #include "cm_screen.h"
+#include "cm_string.h"
 #include "cm_vec.h"
 
 void cm_gui_draw_rect(cm_color_pair color,
@@ -57,7 +58,7 @@ void cm_gui_draw_rect(cm_color_pair color,
 
 void cm_gui_draw_text(cm_color_pair color,
                       struct cm_vec2 vec,
-                      const char* fmt,
+                      const cm_string fmt,
                       ...) {
   char buffer[1024];
 
@@ -74,7 +75,7 @@ void cm_gui_draw_text(cm_color_pair color,
 
 void cm_gui_draw_text_d(struct cm_screen* screen,
                         cm_color_pair color,
-                        const char* fmt,
+                        const cm_string fmt,
                         ...) {
   char buffer[1024];
 
@@ -91,7 +92,7 @@ void cm_gui_draw_text_d(struct cm_screen* screen,
 
 void cm_gui_draw_textln_d(struct cm_screen* screen,
                           cm_color_pair color,
-                          const char* fmt,
+                          const cm_string fmt,
                           ...) {
   char buffer[1024];
 
@@ -106,12 +107,26 @@ void cm_gui_draw_textln_d(struct cm_screen* screen,
   // screen->print_cursor->x = screen->print_cursor->x + strlen(buffer);
 }
 
-void cm_gui_draw_error(struct cm_vec2 vec, const char* prefix) {
-  const char* errmsg = strerror(errno);
+void cm_gui_draw_text_ic(cm_color_pair color, const cm_string fmt, ...) {
+  char buffer[1024];
+
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buffer, sizeof(buffer), fmt, args);
+  va_end(args);
+
+  cm_colors_enable_color(color);
+  printw("%s", buffer);
+  cm_colors_disable_color(color);
+  cm_screen_refresh();
+}
+
+void cm_gui_draw_error(struct cm_vec2 vec, const cm_string prefix) {
+  const cm_string errmsg = strerror(errno);
   cm_gui_draw_text(CM_COLOR_RED_PAIR, vec, "%s : %s\n", prefix, errmsg);
 }
 
-void cm_gui_draw_error_d(struct cm_screen* screen, const char* prefix) {
-  const char* errmsg = strerror(errno);
+void cm_gui_draw_error_d(struct cm_screen* screen, const cm_string prefix) {
+  const cm_string errmsg = strerror(errno);
   cm_gui_draw_text_d(screen, CM_COLOR_RED_PAIR, "%s : %s\n", prefix, errmsg);
 }

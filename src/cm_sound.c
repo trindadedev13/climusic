@@ -7,8 +7,9 @@
 #include "cm_colors.h"
 #include "cm_gui.h"
 #include "cm_screen.h"
+#include "cm_string.h"
 
-struct cm_sound cm_sound_make(char* name) {
+struct cm_sound cm_sound_make(cm_string name) {
   struct cm_sound s;
   s.name = name;
   return s;
