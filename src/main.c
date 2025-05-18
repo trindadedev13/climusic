@@ -33,13 +33,23 @@ struct cm_state {
   int musics_capacity;
 };
 
-struct cm_state cmstate;
-
-static void cm_state_close() {
-  for (int i = 0; i < cmstate.musics_amount; i++) {
-    free(cmstate.musics[i].name);
+static void cm_state_init(struct cm_state* cmstate) {
+  cmstate->isRunning = true;
+  cmstate->mode = CM_MODE_SELECT;
+  cmstate->musics_amount = 0;
+  cmstate->musics_capacity = CM_MUSIC_INITIAL_CAPACITY;
+  cmstate->musics = malloc(sizeof(struct cm_music) * CM_MUSIC_INITIAL_CAPACITY);
+  if (!cmstate->musics) {
+    cm_gui_draw_error_d(defcms,
+                        "Failed to allocate memory for cmstate->musics");
   }
-  free(cmstate.musics);
+}
+
+static void cm_state_close(struct cm_state* cmstate) {
+  for (int i = 0; i < cmstate->musics_amount; i++) {
+    free(cmstate->musics[i].name);
+  }
+  free(cmstate->musics);
 }
 
 #define cm_music(name, position) cm_music_make(name, position);
@@ -52,87 +62,111 @@ static struct cm_music cm_music_make(cm_string name, struct cm_vec2 position) {
 }
 
 // Music player thread
+// Play the music from name (arg)
 void* cm_music_player_thread(void* arg) {
   const cm_string music_name = (const cm_string)arg;
-  cm_string full = strdup(CM_ENV_PATH);
-  strcat(full, music_name);
-  // cm_gui_draw_text(CM_COLOR_PRIMARY_PAIR, cm_vec2(1, 0), "Path %s", full);
+
+  cm_string music_path = strdup(CM_ENV_PATH);
+  strcat(music_path, music_name);
+
+  // Draw "Playing *mu8sicName Now"
   cm_gui_draw_text(CM_COLOR_PRIMARY_PAIR, cm_vec2(0, 0), "Playing %s now",
                    music_name);
-  struct cm_sound s = cm_sound(full);
+
+  // struct to store sound data
+  struct cm_sound cms;
+  cms = cm_sound(music_path);
+
+  // Initializes SDL Sound
   if (!cm_sound_init())
     cm_gui_draw_error_d(defcms, "Failed to initialize sound");
-  if (!cm_sound_play(&s))
+
+  // Play the music
+  if (!cm_sound_play(&cms))
     cm_gui_draw_error_d(defcms, "Failed to play sound");
+
+  // The loop when music is playing
   while (cm_sound_isplaying()) {
     cm_sound_delay(100);
   }
-  cm_sound_end(&s);
+  cm_sound_end(&cms);
+  free(music_path);
   return NULL;
 }
 
-static void cm_music_print(struct cm_music m) {
-  cm_gui_draw_textln_d(defcms, CM_COLOR_PRIMARY_PAIR, "Name: %s, X: %d, Y: %d",
-                       m.name, m.position.x, m.position.y);
-}
-
-int main() {
-  cmstate.isRunning = true;
-  cmstate.mode = CM_MODE_SELECT;
-  cmstate.musics_amount = 0;
-  cmstate.musics_capacity = CM_MUSIC_INITIAL_CAPACITY;
-  cmstate.musics = malloc(sizeof(struct cm_music) * CM_MUSIC_INITIAL_CAPACITY);
-  if (!cmstate.musics) {
-    cm_gui_draw_error_d(defcms, "Failed to allocate memory for cmstate.musics");
-  }
-
-  // you can change it if you want
-  struct cm_file_list_dir_data* tld = cm_file_list_dir(CM_ENV_PATH);
-
-  defcms = cm_screen_create();
-
-  if (!defcms) {
-    cm_gui_draw_error_d(defcms, "Failed to create screen");
-    cm_screen_end_ncurses();  // just end ncurses to avoid bugs in terminal
-    return EXIT_FAILURE;
-  }
-
-  cm_gui_draw_text(CM_COLOR_PRIMARY_PAIR, cm_vec2(defcms->yMax - 2, 0),
-                   "Press 'q' to quit.");
-  cm_screen_clear_line(defcms, 0);
-
-  // struct cm_online co = cm_online_init();
-  // cm_online_get_musics(&co, "Nuts");
-  // cm_online_display_musics(&co);
-
+// Load musics to cmstate->musics array
+static void cm_music_load_musics(struct cm_state* cmstate,
+                                 struct cm_file_list_dir_data* tld) {
   if (tld && tld->len > 0) {
     int max_items = defcms->yMax - 2;
     for (int i = 0; i < tld->len && i < max_items; i++) {
       cm_string name = strdup(tld->dirs[i].name);
       if (cm_string_ends_with(name, ".mp3") ||
           cm_string_ends_with(name, ".wav")) {
-        int y = defcms->yMax / 2 + i;
-        int x = defcms->xMax / 2 - 8;
-        if (cmstate.musics_amount >= cmstate.musics_capacity) {
-          cmstate.musics_capacity = cmstate.musics_amount + 1;
-          cmstate.musics = realloc(cmstate.musics, sizeof(struct cm_music) *
-                                                       cmstate.musics_capacity);
+        if (cmstate->musics_amount >= cmstate->musics_capacity) {
+          cmstate->musics_capacity = cmstate->musics_amount + 1;
+          cmstate->musics =
+              realloc(cmstate->musics,
+                      sizeof(struct cm_music) * cmstate->musics_capacity);
         }
-        cmstate.musics[cmstate.musics_amount++] = cm_music(name, cm_vec2(y, x));
-        cm_gui_draw_text(CM_COLOR_PRIMARY_PAIR, cm_vec2(y, x), "%s", name);
+        struct cm_vec2 pos;
+        pos = cm_vec2(defcms->yMax / 2 + i, defcms->xMax / 2 - 8);
+        cmstate->musics[cmstate->musics_amount++] = cm_music(name, pos);
       }
     }
-    cmstate.selected_music = cmstate.musics[0];
-    cm_screen_move(cmstate.musics[0].position);
+    cmstate->selected_music = cmstate->musics[0];
+    cm_screen_move(cmstate->musics[0].position);
+  }
+}
+
+// Draw Musics List form cmstate->musics array
+static void cm_music_draw_musics_list(struct cm_state* cmstate) {
+  if (cmstate->musics && cmstate->musics_amount > 0) {
+    for (int i = 0; i < cmstate->musics_amount; ++i) {
+      struct cm_music cmm;
+      cmm = cmstate->musics[i];
+      cm_gui_draw_text(CM_COLOR_PRIMARY_PAIR,
+                       cm_vec2(cmm.position.y, cmm.position.x), "%s", cmm.name);
+    }
   } else {
     cm_gui_draw_text(CM_COLOR_PRIMARY_PAIR,
                      cm_vec2(defcms->yMax / 2, defcms->xMax / 2 - 5),
                      "No files found");
-    cm_screen_move(cm_vec2(0, 0));  // move cursor to x:0 y:0
+    cm_screen_move(cm_vec2(0, 0));  // move cursor to y:0 x:0
   }
+}
+
+int main() {
+  // Initializes Default CM Screen (ncurses and more)
+  defcms = cm_screen_create();
+  if (!defcms) {
+    cm_gui_draw_error_d(defcms, "Failed to create screen");
+    cm_screen_end_ncurses();  // just end ncurses to avoid bugs in terminal
+    return EXIT_FAILURE;
+  }
+
+  // Initialize states
+  struct cm_state cmstate;
+  cm_state_init(&cmstate);
+
+  // List all musics from dir
+  struct cm_file_list_dir_data* tld;
+  tld = cm_file_list_dir(CM_ENV_PATH);
+
+  cm_gui_draw_text(CM_COLOR_PRIMARY_PAIR, cm_vec2(defcms->yMax - 2, 0),
+                   "Press 'q' to quit.");
+  cm_screen_clear_line(defcms, 0);
+
+  // struct cm_online co;
+  // co = cm_online_init();
+  // cm_online_get_musics(&co, "Nuts");
+  // cm_online_display_musics(&co);
 
   pthread_t music_thread;
   cm_string input = malloc(1024);
+
+  cm_music_load_musics(&cmstate, tld);
+  cm_music_draw_musics_list(&cmstate);
 
   // handle chars
   // when 'q' finish program
@@ -145,13 +179,16 @@ int main() {
       cm_screen_clear_line(defcms, 0);
     }
 
+    cm_music_draw_musics_list(&cmstate);
+
     if (ch == 'w' || ch == CM_KEY_UP) {
       if (cmstate.mode != CM_MODE_INPUT) {
         if (defcms->cursor->y != 0 &&
             !(defcms->cursor->y <= cmstate.musics[0].position.y)) {
           cm_screen_move(cm_vec2(--defcms->cursor->y, defcms->cursor->x));
           for (int i = 0; i < cmstate.musics_amount; i++) {
-            struct cm_music cmm = cmstate.musics[i];
+            struct cm_music cmm;
+            cmm = cmstate.musics[i];
             if (cmm.position.y == defcms->cursor->y) {
               cmstate.selected_music = cmm;
             }
@@ -165,7 +202,8 @@ int main() {
               cmstate.musics[cmstate.musics_amount - 1].position.y)) {
           cm_screen_move(cm_vec2(++defcms->cursor->y, defcms->cursor->x));
           for (int i = 0; i < cmstate.musics_amount; i++) {
-            struct cm_music cmm = cmstate.musics[i];
+            struct cm_music cmm;
+            cmm = cmstate.musics[i];
             if (cmm.position.y == defcms->cursor->y) {
               cmstate.selected_music = cmm;
             }
@@ -199,7 +237,8 @@ int main() {
       }
     } else if (ch == ':') {
       // input mode
-      struct cm_vec2 input_pos = cm_vec2(defcms->yMax - 1, 0);
+      struct cm_vec2 input_pos;
+      input_pos = cm_vec2(defcms->yMax - 1, 0);
       cmstate.mode = CM_MODE_INPUT;
       cm_gui_draw_text(CM_COLOR_PRIMARY_PAIR, input_pos, ":");
       cm_screen_move(cm_vec2(input_pos.y, input_pos.x + 2));
@@ -208,7 +247,7 @@ int main() {
       cm_screen_disable_echo();
       cm_gui_draw_text(CM_COLOR_PRIMARY_PAIR, cm_vec2(0, 0), "You write: %s",
                        input);
-      // exit the mode
+      // exit input mode
       cm_screen_clear_line(defcms, defcms->yMax - 1);
       cmstate.selected_music = cmstate.musics[0];
       cm_screen_move(cmstate.musics[0].position);
@@ -221,6 +260,6 @@ int main() {
   free(input);
   cm_file_list_dir_close(tld);
   cm_screen_end(defcms);
-  cm_state_close();
+  cm_state_close(&cmstate);
   return EXIT_SUCCESS;
 }

@@ -11,7 +11,7 @@ void cm_colors_init(cm_color_pair background_id) {
     init_color(CM_COLOR_PRIMARY_ID, 1000, 1000, 1000);  // #ffffff (white)
     init_color(CM_COLOR_SECONDARY_ID, 200, 200, 200);   // #c8c8c8 (light grey)
     init_color(CM_COLOR_BACKGROUND_ID, 33, 33, 33);     // #212121 (dark grey)
-    init_color(CM_COLOR_RED_ID, 255, 0, 0);             // #FF0000 (red)
+    init_color(CM_COLOR_RED_ID, 1000, 0, 0);            // #FF0000 (red)
   }
 
   // init pairs
