@@ -86,7 +86,3 @@ void cm_online_get_musics(struct cm_online* co, const cm_string search) {
 }
 
 void cm_online_display_musics(struct cm_online* co) {}
-
-void cm_online_close(struct cm_online* co) {
-  curl_easy_cleanup(co->curl);
-}

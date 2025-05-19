@@ -24,14 +24,6 @@ void cm_colors_init(cm_color_pair background_id) {
   init_pair(CM_COLOR_RED_PAIR, CM_COLOR_RED_ID, background_id);
 }
 
-void cm_colors_enable_color(cm_color_pair ccp) {
-  attron(COLOR_PAIR(ccp));
-}
-
-void cm_colors_disable_color(cm_color_pair ccp) {
-  attroff(COLOR_PAIR(ccp));
-}
-
 void cm_colors_set_background_color(cm_color_pair ccp) {
   bkgd(COLOR_PAIR(ccp));
   refresh();

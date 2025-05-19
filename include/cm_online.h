@@ -6,6 +6,7 @@
 #include <curl/curl.h>
 
 #include "cm_buffer.h"
+#include "cm_inline.h"
 #include "cm_string.h"
 
 struct cm_online {
@@ -31,6 +32,8 @@ void cm_online_get_musics(struct cm_online* co, const cm_string url);
 void cm_online_display_musics(struct cm_online* co);
 
 // Closes the curl and stuff.
-void cm_online_close(struct cm_online* co);
+CM_INLINE static void cm_online_close(struct cm_online* co) {
+  curl_easy_cleanup(co->curl);
+}
 
 #endif

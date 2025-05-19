@@ -13,8 +13,7 @@ set(SOURCES
     src/cm_online.c
     src/cm_screen.c
     src/cm_string.c
-    src/cm_sound.c
-    src/cm_vec.c)
+    src/cm_sound.c)
 
 set(HEADERS
     include/cm_bool.h
@@ -22,6 +21,7 @@ set(HEADERS
     include/cm_colors.h
     include/cm_file.h
     include/cm_gui.h
+    include/cm_inline.h
     include/cm_online.h
     include/cm_screen.h
     include/cm_string.h

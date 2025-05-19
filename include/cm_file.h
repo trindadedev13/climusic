@@ -4,16 +4,17 @@
 #include <dirent.h>
 #include <stdio.h>
 
+#include "cm_inline.h"
 #include "cm_string.h"
 
 #define CM_FILE_LIST_DIR_INITIAL_CAPACITY 1
-#define FILE_MODE_WRITE "w"
-#define FILE_MODE_READ "r"
-#define FILE_TYPE_FILE_STR "File"
-#define FILE_TYPE_DIR_STR "Directory"
+#define CM_FILE_MODE_WRITE "w"
+#define CM_FILE_MODE_READ "r"
+#define CM_FILE_TYPE_FILE_STR "File"
+#define CM_FILE_TYPE_DIR_STR "Directory"
 
 // Represents the type of file
-enum cm_file_type { TFILE, TDIR };
+enum cm_file_type { CM_FILE, CM_DIR };
 
 // Represents the file
 struct cm_file {
@@ -38,9 +39,20 @@ struct cm_file_list_dir_data* cm_file_list_dir(cm_string path);
 void cm_file_list_dir_close(struct cm_file_list_dir_data* tld);
 
 // Returns the string of filetype
-cm_string cm_file_get_filetype_str(enum cm_file_type filetype);
+CM_INLINE static cm_string cm_file_get_filetype_str(
+    enum cm_file_type filetype) {
+  if (filetype == CM_FILE) {
+    return CM_FILE_TYPE_FILE_STR;
+  } else {
+    return CM_FILE_TYPE_DIR_STR;
+  }
+}
 
 // Creates an file
-FILE* cm_file_create(cm_string file_name);
+CM_INLINE static FILE* cm_file_create(cm_string file_name) {
+  FILE* file;
+  file = fopen(file_name, CM_FILE_MODE_WRITE);
+  return file;
+}
 
 #endif

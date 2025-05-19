@@ -9,6 +9,7 @@
 #include "cm_env.h"
 #include "cm_file.h"
 #include "cm_gui.h"
+#include "cm_inline.h"
 #include "cm_online.h"
 #include "cm_screen.h"
 #include "cm_sound.h"
@@ -54,7 +55,8 @@ static void cm_state_close(struct cm_state* cmstate) {
 
 #define cm_music(name, position) cm_music_make(name, position);
 
-static struct cm_music cm_music_make(cm_string name, struct cm_vec2 position) {
+CM_INLINE static struct cm_music cm_music_make(cm_string name,
+                                               struct cm_vec2 position) {
   struct cm_music cmm;
   cmm.name = name;
   cmm.position = position;

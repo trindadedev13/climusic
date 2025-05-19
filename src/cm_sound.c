@@ -31,14 +31,6 @@ cm_bool cm_sound_init() {
   return true;
 }
 
-cm_bool cm_sound_isplaying() {
-  return Mix_PlayingMusic();
-}
-
-void cm_sound_delay(int ms) {
-  SDL_Delay(ms);
-}
-
 void cm_sound_end(struct cm_sound* cms) {
   if (cms->music) {
     Mix_FreeMusic(cms->music);
@@ -62,8 +54,4 @@ cm_bool cm_sound_play(struct cm_sound* cms) {
   }
 
   return true;
-}
-
-void cm_sound_stop() {
-  Mix_HaltMusic();
 }

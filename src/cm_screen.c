@@ -56,42 +56,6 @@ struct cm_screen* cm_screen_create() {
   return screen;
 }
 
-void cm_screen_clear() {
-  clear();
-}
-
-void cm_screen_refresh() {
-  refresh();
-}
-
-int cm_screen_getchar() {
-  return getch();
-}
-
-void cm_screen_update(struct cm_screen* screen) {
-  getyx(stdscr, screen->cursor->y, screen->cursor->x);
-}
-
-void cm_screen_move(struct cm_vec2 vec) {
-  move(vec.y, vec.x);
-  cm_screen_refresh();
-}
-
-void cm_screen_enable_echo() {
-  echo();
-  cm_screen_refresh();
-}
-
-void cm_screen_disable_echo() {
-  noecho();
-  cm_screen_refresh();
-}
-
-void cm_screen_get_str(cm_string dest) {
-  getstr(dest);
-  cm_screen_refresh();
-}
-
 void cm_screen_clear_line(struct cm_screen* screen, int y) {
   int oy = screen->cursor->y;
   int ox = screen->cursor->x;
@@ -101,13 +65,10 @@ void cm_screen_clear_line(struct cm_screen* screen, int y) {
   cm_screen_refresh();
 }
 
-void cm_screen_end_ncurses() {
-  endwin();  // finish ncurses
-}
-
 void cm_screen_end(struct cm_screen* screen) {
   cm_colors_disable_color(CM_COLOR_PRIMARY_PAIR);  // disable color
   cm_screen_end_ncurses();
   free(screen->cursor);
+  free(screen->print_cursor);
   free(screen);
 }

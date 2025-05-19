@@ -30,7 +30,7 @@ struct cm_file_list_dir_data* cm_file_list_dir(cm_string path) {
         tld->dirs = realloc(tld->dirs, sizeof(struct cm_file) * tld->capacity);
       }
       int nlen = tld->len++;
-      tld->dirs[nlen].filetype = (dir->d_type == DT_DIR) ? TDIR : TFILE;
+      tld->dirs[nlen].filetype = (dir->d_type == DT_DIR) ? CM_DIR : CM_FILE;
       tld->dirs[nlen].name = strdup(dir->d_name);
     }
     closedir(d);
@@ -47,20 +47,4 @@ void cm_file_list_dir_close(struct cm_file_list_dir_data* tld) {
   }
   free(tld->dirs);
   free(tld);
-}
-
-// Returns the string of filetype
-cm_string cm_file_get_filetype_str(enum cm_file_type filetype) {
-  if (filetype == TFILE) {
-    return FILE_TYPE_FILE_STR;
-  } else {
-    return FILE_TYPE_DIR_STR;
-  }
-}
-
-// Creates an file
-FILE* cm_file_create(cm_string file_name) {
-  FILE* file;
-  file = fopen(file_name, FILE_MODE_WRITE);
-  return file;
 }

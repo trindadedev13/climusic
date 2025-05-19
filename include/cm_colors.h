@@ -1,6 +1,10 @@
 #ifndef CM_COLORS_H
 #define CM_COLORS_H
 
+#include <ncurses.h>
+
+#include "cm_inline.h"
+
 // pairs
 #define CM_COLOR_PRIMARY_PAIR 2
 #define CM_COLOR_PRIMARY_DARK_PAIR 1
@@ -19,10 +23,14 @@ typedef int cm_color_pair;
 
 void cm_colors_init(cm_color_pair);
 
-void cm_colors_enable_color(cm_color_pair);
-
-void cm_colors_disable_color(cm_color_pair);
-
 void cm_colors_set_background_color(cm_color_pair);
+
+CM_INLINE static void cm_colors_enable_color(cm_color_pair ccp) {
+  attron(COLOR_PAIR(ccp));
+}
+
+CM_INLINE static void cm_colors_disable_color(cm_color_pair ccp) {
+  attroff(COLOR_PAIR(ccp));
+}
 
 #endif
