@@ -26,14 +26,8 @@ pkg install cmake sdl2 sdl2-mixer ruby # no need ncurses because its built-in
 ```
 
 # Run
-## Any Linux
 
 ```bash
-ruby build.rb
-```
-
-## Termux
-
-```bash
-ruby build.rb --termux
+ruby build.rb [options]
+# Use -h to see options.
 ```
