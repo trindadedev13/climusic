@@ -159,10 +159,16 @@ int main() {
                    "Press 'q' to quit.");
   cm_screen_clear_line(defcms, 0);
 
-  // struct cm_online co;
-  // co = cm_online_init();
-  // cm_online_get_musics(&co, "Nuts");
-  // cm_online_display_musics(&co);
+  // Online
+  struct cm_online cmom;
+  cmom = cm_online_init();
+  if (!cm_online_get_musics(&cmom, "Nuts")) {
+    cm_gui_draw_error_d(defcms, "Failed to get musics");
+    cm_screen_end_ncurses();  // just end ncurses to avoid bugs in terminal
+    return EXIT_FAILURE;
+  }
+  cm_online_display_musics(&cmom);
+  cm_online_cleanup(&cmom);
 
   pthread_t music_thread;
   cm_string input = malloc(1024);

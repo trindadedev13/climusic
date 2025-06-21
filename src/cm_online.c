@@ -6,6 +6,7 @@
 
 #include <curl/curl.h>
 
+#include "cm_bool.h"
 #include "cm_buffer.h"
 #include "cm_colors.h"
 #include "cm_env.h"
@@ -25,6 +26,15 @@ struct cm_online cm_online_init() {
     // return NULL;
   }
   return co;
+}
+
+void cm_online_cleanup(struct cm_online* co) {
+  if (co->curl) {
+    curl_easy_cleanup(co->curl);
+  }
+  if (co->response_buffer.data) {
+    free(co->response_buffer.data);
+  }
 }
 
 size_t cm_online_get_musics_callback(void* contents,
@@ -55,16 +65,40 @@ size_t cm_online_get_musics_callback(void* contents,
   return total_size;
 }
 
-void cm_online_get_musics(struct cm_online* co, const cm_string search) {
+cm_bool cm_online_get_musics(struct cm_online* co, const cm_string search) {
   if (co->curl) {
-    cm_string full_url = strdup(CM_ENV_ONLINE_BASE_URL);
+    // Create url based on search entry
     cm_string encoded = cm_string_encode_spaces(search);
+    size_t total_len = strlen(CM_ENV_ONLINE_BASE_URL) + strlen(encoded) + 1;
+    cm_string full_url = malloc(total_len);
+    if (!full_url) {
+      cm_gui_draw_textln_d(defcms, CM_COLOR_RED_PAIR,
+                           "Failed to allocate memory for CMOnline FullUrl: %s",
+                           curl_easy_strerror(co->res));
+      free(encoded);
+      return false;
+    }
+    strcpy(full_url, CM_ENV_ONLINE_BASE_URL);
     strcat(full_url, encoded);
 
-    cm_string path = strdup(CM_ENV_PATH);
-    strcat(path, "log.txt");
-    FILE* log_file = cm_file_create(path);
+    // Open log file
+    cm_string logfilename = "log.txt";
+    total_len = strlen(CM_ENV_PATH) + strlen(logfilename) + 1;
+    cm_string logfilepath = malloc(total_len);
+    if (!logfilepath) {
+      cm_gui_draw_textln_d(
+          defcms, CM_COLOR_RED_PAIR,
+          "Failed to allocate memory for CMOnline LogFilePath: %s",
+          curl_easy_strerror(co->res));
+      free(encoded);
+      free(full_url);
+      return false;
+    }
+    strcpy(logfilepath, CM_ENV_PATH);
+    strcat(logfilepath, logfilename);
+    FILE* log_file = cm_file_create(logfilepath);
 
+    // Perform the request
     curl_easy_setopt(co->curl, CURLOPT_URL, full_url);
     curl_easy_setopt(co->curl, CURLOPT_WRITEFUNCTION,
                      cm_online_get_musics_callback);
@@ -79,10 +113,13 @@ void cm_online_get_musics(struct cm_online* co, const cm_string search) {
       fprintf(log_file, "%s", co->response_buffer.data);
     }
 
+    free(logfilepath);
     free(encoded);
     free(full_url);
     fclose(log_file);
+    return true;
   }
+  return false;
 }
 
 void cm_online_display_musics(struct cm_online* co) {}
