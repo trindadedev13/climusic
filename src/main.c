@@ -71,7 +71,7 @@ void* cm_music_player_thread(void* arg) {
   cm_string music_path = strdup(CM_ENV_PATH);
   strcat(music_path, music_name);
 
-  // Draw "Playing *mu8sicName Now"
+  // Draw "Playing *muusicName Now"
   cm_gui_draw_text(CM_COLOR_PRIMARY_PAIR, cm_vec2(0, 0), "Playing %s now",
                    music_name);
 
