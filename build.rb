@@ -6,8 +6,16 @@ def run(cmd)
   system(cmd) or abort(red("Failed to run #{cmd}"))
 end
 
-asan = false
+def help()
+  puts "CLIMusic Build Script"
+  puts "--run  or -r   | Run after build."
+  puts "--asan or -as  | Build with Address Sanitizer (Debug purposes)."
+  puts "--help or -h   | Shows helps."
+  exit 1
+end
+
 run_program = false
+asan = false
 
 os = case RbConfig::CONFIG["host_os"]
        when /mswin|mingw|cygwin/ then :window
@@ -24,10 +32,12 @@ os = case RbConfig::CONFIG["host_os"]
 if ARGV.length >= 1
   ARGV.each do |arg|
     case arg
-      when "--asan", "-as"
-        asan = true
       when "--run", "-r"
         run_program = true
+      when "--asan", "-as"
+        asan = true
+      when "--help", "-h"
+        help()
       else
         puts "Invalid arg: #{arg}"
     end
