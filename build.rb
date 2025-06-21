@@ -46,7 +46,7 @@ end
 
 FileUtils.mkdir_p("build")
 Dir.chdir("build") do
-  cmake_command = "cmake " + (asan ? "-DASAN=ON .." : "..")
+  cmake_command = "cmake " + (asan ? "-DASAN=ON .." : "-DASAN=OFF ..")
   case os
     when :windows
       # Windows
